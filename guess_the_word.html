@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .tries-left {
+      display: inline-block;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      width: 40px;
+      margin-right: 0.5rem;
+    }
+
+    .word {
+      display: inline-block;
+      font-size: 2rem;
+      letter-spacing: 4px;
+    }
+
+    .letter-button {
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+<script>
+  function randomItem (list) {
+    return list[randomIndex(list)]
+  }
+
+  function randomIndex (list) {
+    return randomInteger(list.length)
+  }
+
+  function randomInteger (max) {
+    return Math.floor(Math.random() * max)
+  }
+
+  function numberToRoman(number) {
+    return '|'.repeat(number)
+  }
+
+  function unrevealWord(word) {
+    return '_'.repeat(word.length)
+  }
+
+  function revealLetterInWord(game, letter) {
+    letter = letter.toUpperCase()
+    if (game.word.includes(letter)) {
+      let index = game.word.indexOf(letter)
+      do {
+        game.revealedWord = game.revealedWord.substr(0, index) +
+          letter + game.revealedWord.substr(index + 1)
+        index = game.word.indexOf(letter, index + 1)
+      } while (index !== -1)
+    } else {
+      game.triesLeft = Math.max(0, game.triesLeft - 1)
+    }
+  }
+
+  const ui = {
+    createTriesLeft(triesLeft) {
+      const $triesLeft = document.createElement('div')
+      $triesLeft.className = 'tries-left'
+      $triesLeft.textContent = numberToRoman(triesLeft)
+      return $triesLeft
+    },
+
+    createWord(word) {
+      const $word = document.createElement('div')
+      $word.className = 'word'
+      $word.textContent = word
+      return $word
+    },
+
+    createLetterButtons () {
+      const letterButtons = document.createElement('div')
+      letterButtons.className = 'letter-buttons'
+      for (
+        let letterCode = 'A'.charCodeAt(0);
+        letterCode <= 'Z'.charCodeAt(0);
+        letterCode++
+      ) {
+        const letter = String.fromCharCode(letterCode)
+        const letterButton = ui.createLetterButton(letter)
+        letterButtons.appendChild(letterButton)
+      }
+      return letterButtons
+    },
+
+    createLetterButton (letter) {
+      const letterButton = document.createElement('button')
+      letterButton.className = 'letter-button'
+      letterButton.textContent = letter
+      return letterButton
+    }
+  }
+
+  function createUI ({triesLeft, revealedWord}) {
+    const $ui = document.createElement('div')
+    const $row1 = document.createElement('div')
+    $row1.style.marginBottom = '0.5rem'
+    const $triesLeft = ui.createTriesLeft(triesLeft)
+    $row1.appendChild($triesLeft)
+    const $word = ui.createWord(revealedWord)
+    $row1.appendChild($word)
+    $ui.appendChild($row1)
+    const letterButtons = ui.createLetterButtons()
+    $ui.appendChild(letterButtons)
+    return $ui
+  }
+
+  const dictionary = [
+    'banana',
+    'apple',
+  ]
+
+  const word = randomItem(dictionary).toUpperCase()
+  const game = {
+    word,
+    revealedWord: unrevealWord(word),
+    triesLeft: 5,
+  }
+
+  const $ui = createUI(game)
+
+  $ui.addEventListener('click', function (event) {
+    const target = event.target
+    if (target.classList.contains('letter-button')) {
+      if (!target.disabled) {
+        const letter = target.textContent
+        revealLetterInWord(game, letter)
+        target.disabled = true
+        const $triesLeft = $ui.querySelector('.tries-left')
+        $triesLeft.textContent = numberToRoman(game.triesLeft)
+        const $word = $ui.querySelector('.word')
+        $word.textContent = game.revealedWord
+      }
+    }
+  })
+
+  document.body.appendChild($ui)
+</script>
+</body>
+</html>
